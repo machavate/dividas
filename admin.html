@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-MZ">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Admin — Livro de Dívidas</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+<style>
+  body { max-width: 720px; margin: 0 auto; padding: 24px 16px 60px; }
+  .item { background: var(--white-card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+  .item img { max-width: 100%; border-radius: 8px; margin: 10px 0; }
+  .item-acoes { display: flex; gap: 10px; margin-top: 10px; }
+  .btn-aprovar { background: var(--paid-green); color: #fff; }
+  .btn-rejeitar { background: var(--debt-red); color: #fff; }
+</style>
+</head>
+<body>
+  <h1 class="brand-title">Admin · Comprovativos</h1>
+  <p class="muted" id="quem-esta">a verificar sessão…</p>
+  <div id="lista" style="margin-top:20px;"></div>
+
+  <script type="module">
+    import { firebaseConfig, ADMIN_EMAILS } from "./firebase-config.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getFirestore, collectionGroup, query, where, onSnapshot,
+      doc, updateDoc, getDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user || !ADMIN_EMAILS.includes(user.email)) {
+        document.getElementById("quem-esta").textContent =
+          "Acesso restrito. Inicie sessão na app principal com um e-mail de administrador listado em firebase-config.js.";
+        const email = prompt("E-mail de administrador:");
+        const senha = email ? prompt("Palavra-passe:") : null;
+        if (email && senha) signInWithEmailAndPassword(auth, email, senha).catch(() => {});
+        return;
+      }
+      document.getElementById("quem-esta").textContent = "Sessão: " + user.email;
+      escutarPendentes();
+    });
+
+    function escutarPendentes() {
+      const q = query(collectionGroup(db, "comprovativos"), where("status", "==", "pendente"));
+      onSnapshot(q, (snap) => {
+        const lista = document.getElementById("lista");
+        if (snap.empty) {
+          lista.innerHTML = "<p class='muted'>Sem comprovativos pendentes. 🎉</p>";
+          return;
+        }
+        lista.innerHTML = "";
+        snap.forEach((docSnap) => {
+          const c = docSnap.data();
+          const lojaRef = docSnap.ref.parent.parent; // lojas/{uid}
+          const div = document.createElement("div");
+          div.className = "item";
+          div.innerHTML = `
+            <p><strong>Valor:</strong> ${c.valor} MZN &nbsp; <strong>Ref.:</strong> ${c.referencia}</p>
+            <p class="muted">Loja (uid): ${lojaRef.id}</p>
+            <img src="${c.urlImagem}" alt="comprovativo" />
+            <div class="item-acoes">
+              <button class="btn btn-aprovar">Aprovar (+30 dias)</button>
+              <button class="btn btn-rejeitar">Rejeitar</button>
+            </div>`;
+          div.querySelector(".btn-aprovar").onclick = () => aprovar(docSnap.ref, lojaRef);
+          div.querySelector(".btn-rejeitar").onclick = () => rejeitar(docSnap.ref);
+          lista.appendChild(div);
+        });
+      });
+    }
+
+    async function aprovar(compRef, lojaRef) {
+      const lojaSnap = await getDoc(lojaRef);
+      const atual = lojaSnap.data()?.assinatura?.validoAte;
+      const base = atual && new Date(atual) > new Date() ? new Date(atual) : new Date();
+      base.setDate(base.getDate() + 30);
+      await updateDoc(lojaRef, { assinatura: { status: "ativo", validoAte: base.toISOString() } });
+      await updateDoc(compRef, { status: "aprovado" });
+    }
+
+    async function rejeitar(compRef) {
+      await updateDoc(compRef, { status: "rejeitado" });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ⚠️ Atualize esta lista com o(s) mesmo(s) e-mail(is) que colocou
+    // em ADMIN_EMAILS no ficheiro firebase-config.js
+    function ehAdmin() {
+      return request.auth != null &&
+        request.auth.token.email in ["seuemail@exemplo.com"];
+    }
+
+    match /lojas/{uid} {
+      allow read: if request.auth != null && (request.auth.uid == uid || ehAdmin());
+      allow create: if request.auth != null && request.auth.uid == uid;
+      // a loja edita o seu perfil; o admin só pode alterar o campo "assinatura" (aprovação)
+      allow update: if request.auth != null && (request.auth.uid == uid || ehAdmin());
+
+      match /devedores/{devedorId} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
+
+      match /comprovativos/{compId} {
+        allow create: if request.auth != null && request.auth.uid == uid;
+        allow read: if request.auth != null && (request.auth.uid == uid || ehAdmin());
+        allow update: if ehAdmin(); // só o admin aprova/rejeita
+      }
+    }
+  }
+}

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-MZ">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Livro de Dívidas</title>
+<meta name="description" content="O seu caderno de fiado, digital." />
+<meta name="theme-color" content="#211D18" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ======================= TELA: A CARREGAR ======================= -->
+<div id="screen-loading" class="screen screen--center">
+  <div class="brand-mark">
+    <span class="brand-mark__stitch"></span>
+    <h1 class="brand-title">Livro de Dívidas</h1>
+  </div>
+  <p class="muted">a abrir o caderno…</p>
+</div>
+
+<!-- ======================= TELA: LOGIN / REGISTO ======================= -->
+<div id="screen-auth" class="screen screen--center hidden">
+  <div class="auth-card">
+    <div class="brand-mark brand-mark--sm">
+      <span class="brand-mark__stitch"></span>
+      <h1 class="brand-title">Livro de Dívidas</h1>
+    </div>
+    <p class="auth-tag">O seu caderno de fiado — agora digital, com lembretes que você não esquece de enviar.</p>
+
+    <div class="tabs" role="tablist">
+      <button class="tab is-active" data-tab="login" role="tab">Entrar</button>
+      <button class="tab" data-tab="registo" role="tab">Criar conta</button>
+    </div>
+
+    <form id="form-login" class="form">
+      <label class="field">
+        <span>E-mail</span>
+        <input type="email" id="login-email" required autocomplete="email" />
+      </label>
+      <label class="field">
+        <span>Palavra-passe</span>
+        <input type="password" id="login-senha" required autocomplete="current-password" minlength="6" />
+      </label>
+      <p class="form-error" id="login-erro"></p>
+      <button type="submit" class="btn btn--primary btn--block">Entrar</button>
+    </form>
+
+    <form id="form-registo" class="form hidden">
+      <label class="field">
+        <span>Nome da loja</span>
+        <input type="text" id="registo-loja" required placeholder="Ex: Mercearia da Dona Amélia" />
+      </label>
+      <label class="field">
+        <span>Seu WhatsApp (com código do país)</span>
+        <input type="tel" id="registo-telefone" required placeholder="Ex: 258841234567" />
+      </label>
+      <label class="field">
+        <span>E-mail</span>
+        <input type="email" id="registo-email" required autocomplete="email" />
+      </label>
+      <label class="field">
+        <span>Palavra-passe</span>
+        <input type="password" id="registo-senha" required autocomplete="new-password" minlength="6" />
+      </label>
+      <p class="form-error" id="registo-erro"></p>
+      <button type="submit" class="btn btn--primary btn--block">Criar a minha conta — 7 dias grátis</button>
+    </form>
+  </div>
+</div>
+
+<!-- ======================= APP (após login) ======================= -->
+<div id="screen-app" class="screen hidden">
+
+  <header class="app-header">
+    <div class="app-header__top">
+      <div>
+        <p class="eyebrow" id="app-nome-loja">A minha loja</p>
+        <h1 class="ledger-total" id="app-total-devido">0,00 MZN</h1>
+        <p class="muted">em dívida, no total</p>
+      </div>
+      <button class="icon-btn" id="btn-menu" aria-label="Menu">☰</button>
+    </div>
+
+    <div id="banner-trial" class="banner hidden"></div>
+
+    <div class="search-row">
+      <input type="search" id="input-busca" placeholder="Procurar devedor…" />
+    </div>
+  </header>
+
+  <main class="ledger" id="lista-devedores">
+    <!-- linhas inseridas via JS -->
+  </main>
+
+  <p id="lista-vazia" class="empty-state hidden">
+    <strong>O seu caderno está vazio.</strong><br/>
+    Toque em “+ Novo devedor” para registar a primeira dívida.
+  </p>
+
+  <button id="btn-novo-devedor" class="fab">+ Novo devedor</button>
+
+  <!-- Menu lateral -->
+  <div id="menu-lateral" class="menu-overlay hidden">
+    <div class="menu-painel">
+      <button class="menu-item" data-nav="app">📒 O meu livro</button>
+      <button class="menu-item" data-nav="assinatura">💳 A minha assinatura</button>
+      <button class="menu-item" id="btn-logout">🚪 Sair</button>
+      <button class="menu-fechar" id="btn-fechar-menu">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= NOVO / EDITAR DEVEDOR (modal) ======================= -->
+<div id="modal-devedor" class="modal hidden">
+  <div class="modal__caixa">
+    <h2 id="modal-devedor-titulo">Novo devedor</h2>
+    <form id="form-devedor" class="form">
+      <label class="field">
+        <span>Nome</span>
+        <input type="text" id="dev-nome" required placeholder="Ex: Sr. João" />
+      </label>
+      <label class="field">
+        <span>WhatsApp (com código do país)</span>
+        <input type="tel" id="dev-telefone" placeholder="Ex: 258841234567" />
+      </label>
+      <label class="field">
+        <span>Valor em dívida (MZN)</span>
+        <input type="number" id="dev-valor" required min="0" step="0.01" inputmode="decimal" />
+      </label>
+      <label class="field">
+        <span>Data</span>
+        <input type="date" id="dev-data" required />
+      </label>
+      <label class="field">
+        <span>Descrição (opcional)</span>
+        <input type="text" id="dev-descricao" placeholder="Ex: 2 sacos de arroz" />
+      </label>
+      <p class="form-error" id="dev-erro"></p>
+      <div class="modal__acoes">
+        <button type="button" class="btn btn--ghost" id="btn-cancelar-devedor">Cancelar</button>
+        <button type="submit" class="btn btn--primary">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ======================= DETALHE DO DEVEDOR ======================= -->
+<div id="screen-detalhe" class="screen hidden">
+  <header class="app-header app-header--voltar">
+    <button class="icon-btn" id="btn-voltar-detalhe" aria-label="Voltar">←</button>
+    <div>
+      <h1 class="detalhe-nome" id="detalhe-nome">Nome</h1>
+      <p class="muted" id="detalhe-telefone"></p>
+    </div>
+    <button class="icon-btn" id="btn-editar-devedor" aria-label="Editar">✎</button>
+  </header>
+
+  <div class="saldo-card">
+    <div>
+      <p class="muted">falta pagar</p>
+      <p class="saldo-valor saldo-valor--deve" id="detalhe-saldo">0,00 MZN</p>
+    </div>
+    <button class="btn btn--whatsapp" id="btn-lembrete-whatsapp">
+      Enviar lembrete no WhatsApp
+    </button>
+  </div>
+
+  <div class="secao">
+    <h2 class="secao-titulo">Registar pagamento</h2>
+    <form id="form-pagamento" class="form form--linha">
+      <input type="number" id="pag-valor" placeholder="Valor pago (MZN)" required min="0.01" step="0.01" inputmode="decimal" />
+      <button type="submit" class="btn btn--primary">Registar</button>
+    </form>
+  </div>
+
+  <div class="secao">
+    <h2 class="secao-titulo">Histórico</h2>
+    <div id="detalhe-historico" class="historico"></div>
+  </div>
+
+  <button class="link-perigo" id="btn-apagar-devedor">Apagar este devedor</button>
+</div>
+
+<!-- ======================= ASSINATURA ======================= -->
+<div id="screen-assinatura" class="screen hidden">
+  <header class="app-header app-header--voltar">
+    <button class="icon-btn" id="btn-voltar-assinatura" aria-label="Voltar">←</button>
+    <h1 class="detalhe-nome">A minha assinatura</h1>
+  </header>
+
+  <div class="secao">
+    <div id="assinatura-status-card" class="status-card">
+      <p class="eyebrow">estado</p>
+      <p class="status-card__linha" id="assinatura-status-texto">—</p>
+    </div>
+  </div>
+
+  <div class="secao">
+    <h2 class="secao-titulo">Plano — 399 MZN / mês</h2>
+    <p class="muted">Para renovar, faça a transferência para um dos números abaixo e envie o comprovativo. A sua assinatura é ativada manualmente após confirmação.</p>
+    <div class="pagamento-info">
+      <p><strong>M-Pesa:</strong> 84 XXX XXXX</p>
+      <p><strong>e-Mola:</strong> 86 XXX XXXX</p>
+      <p><strong>Nome:</strong> Livro de Dívidas, Lda</p>
+    </div>
+  </div>
+
+  <div class="secao">
+    <h2 class="secao-titulo">Enviar comprovativo</h2>
+    <form id="form-comprovativo" class="form">
+      <label class="field">
+        <span>Valor enviado (MZN)</span>
+        <input type="number" id="comp-valor" required min="1" step="0.01" value="399" />
+      </label>
+      <label class="field">
+        <span>Referência / ID da transação</span>
+        <input type="text" id="comp-referencia" required placeholder="Ex: MP240724.1234" />
+      </label>
+      <label class="field">
+        <span>Foto do comprovativo</span>
+        <input type="file" id="comp-imagem" accept="image/*" required />
+      </label>
+      <p class="form-error" id="comp-erro"></p>
+      <button type="submit" class="btn btn--primary btn--block" id="btn-enviar-comprovativo">Enviar comprovativo</button>
+    </form>
+  </div>
+
+  <div class="secao">
+    <h2 class="secao-titulo">Histórico de comprovativos</h2>
+    <div id="lista-comprovativos" class="historico"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script type="module" src="firebase-config.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>
