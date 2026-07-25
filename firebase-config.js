@@ -13,7 +13,7 @@
 // ============================================================
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: "AIzaSyAgcQIWTqPUrzGO7fq6NW1Hx0iWOcC9h7Y",
   authDomain: "dividas-app.firebaseapp.com",
   projectId: "dividas-app",
