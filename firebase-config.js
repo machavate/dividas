@@ -23,4 +23,4 @@ export const firebaseConfig = {
 };
 
 // E-mail(is) com permissão para aprovar comprovativos no admin.html
-export const ADMIN_EMAILS = ["seuemail@exemplo.com"];
+export const ADMIN_EMAILS = ["omachavate@gmail.com"];
