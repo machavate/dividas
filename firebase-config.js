@@ -12,7 +12,8 @@
 //    > Web (</>) → copie o objeto firebaseConfig e cole abaixo.
 // ============================================================
 
-export const firebaseConfig = {
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
   apiKey: "AIzaSyAgcQIWTqPUrzGO7fq6NW1Hx0iWOcC9h7Y",
   authDomain: "dividas-app.firebaseapp.com",
   projectId: "dividas-app",
@@ -21,6 +22,5 @@ export const firebaseConfig = {
   appId: "1:474462223199:web:e2a45cedcea57a27ded4ea",
   measurementId: "G-RYZJ4V1YNW"
 };
-
 // E-mail(is) com permissão para aprovar comprovativos no admin.html
 export const ADMIN_EMAILS = ["omachavate@gmail.com"];
