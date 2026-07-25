@@ -13,12 +13,13 @@
 // ============================================================
 
 export const firebaseConfig = {
-  apiKey: "COLE_AQUI_A_SUA_API_KEY",
-  authDomain: "SEU-PROJETO.firebaseapp.com",
-  projectId: "SEU-PROJETO",
-  storageBucket: "SEU-PROJETO.appspot.com",
-  messagingSenderId: "000000000000",
-  appId: "1:000000000000:web:xxxxxxxxxxxxxxxxxx"
+  apiKey: "AIzaSyAgcQIWTqPUrzGO7fq6NW1Hx0iWOcC9h7Y",
+  authDomain: "dividas-app.firebaseapp.com",
+  projectId: "dividas-app",
+  storageBucket: "dividas-app.firebasestorage.app",
+  messagingSenderId: "474462223199",
+  appId: "1:474462223199:web:e2a45cedcea57a27ded4ea",
+  measurementId: "G-RYZJ4V1YNW"
 };
 
 // E-mail(is) com permissão para aprovar comprovativos no admin.html
